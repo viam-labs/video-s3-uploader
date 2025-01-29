@@ -148,7 +148,7 @@ class UploaderService(Generic, EasyResource):
         return transfer_callback.thread_info
 
 def validate_field_exists(attribute_name: str, config: ComponentConfig):
-    if not config.HasField(field_name=attribute_name):
+    if attribute_name not in config.attributes.fields:
         raise Exception(f"{attribute_name} must be specified in config.")
 
 if __name__ == "__main__":
