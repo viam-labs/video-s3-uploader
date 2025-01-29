@@ -129,9 +129,10 @@ class UploaderService(Generic, EasyResource):
             try:
                 LOG.info(f"attempting s3 upload for file {path}")
                 self.s3_upload(path, file, os.path.getsize(path)/MB)
+                os.remove(path)
             except Exception as e:
                 if e == OSError:
-                    LOG.warning(f"failed to get size of file {path}, skipping")
+                    LOG.warning(f"failed to get size of file {path}, skipping, error: {e}")
                     continue
                 else:
                     LOG.warning(f"error uploading file to S3, error: {e}")
