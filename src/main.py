@@ -103,7 +103,7 @@ class UploaderService(Generic, EasyResource):
         )
                 
         video_store_name = config.attributes.fields["video_store"].string_value
-        self.video_store = dependencies[video_store_name]
+        self.video_store = dependencies[Camera.get_resource_name(video_store_name)]
         
         self.interval = int(config.attributes.fields["interval"].number_value)
         
@@ -118,6 +118,7 @@ class UploaderService(Generic, EasyResource):
         LOG.info("executing upload on folder")
         files = []
         # walk all dirs including nested ones and get a list of tuples containing (filename, filepath)
+        self.video_store.do_command()
         for (root, dirs, file) in os.walk(self.local_path):
             for f in file:
                 if '.mp4' in f:
