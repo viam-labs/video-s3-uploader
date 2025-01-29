@@ -2,6 +2,7 @@ import asyncio
 from apscheduler.schedulers.background import BackgroundScheduler
 from typing import ClassVar, Final, Mapping, Sequence
 import os
+from datetime import datetime, timedelta
 
 from src.uploader import TransferCallback
 
@@ -114,12 +115,25 @@ class UploaderService(Generic, EasyResource):
         self.scheduler.add_job(self.upload, 'interval', seconds=self.interval*10)
         self.scheduler.start()
     
+    def save_video(self):
+        to_time = datetime.now()
+        to_string = to_time.strftime("%Y-%m-%d_%H-%M-%S")
+        # this will change to hours for final module
+        from_time = to_time - timedelta(seconds=self.interval*10)
+        from_string = from_time.strftime("%Y-%m-%d_%H-%M-%S")
+        LOG.info("calling save on video store module")
+        self.video_store.do_command({
+            "command": "save",
+            "from": from_string,
+            "to": to_string,
+            
+        })
     
     def upload(self):
+        self.save_video()
         LOG.info("executing upload on folder")
         files = []
         # walk all dirs including nested ones and get a list of tuples containing (filename, filepath)
-        # self.video_store.do_command()
         for (root, dirs, file) in os.walk(self.local_path):
             for f in file:
                 if '.mp4' in f:
