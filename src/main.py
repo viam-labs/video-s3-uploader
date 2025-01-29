@@ -3,7 +3,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from typing import ClassVar, Final, Mapping, Sequence
 import os
 
-from .uploader import TransferCallback
+from src.uploader import TransferCallback
 
 from typing_extensions import Self
 from viam.module.module import Module
