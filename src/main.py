@@ -22,7 +22,7 @@ LOG = logging.getLogger(__name__)
 
 class UploaderService(Generic, EasyResource):
     MODEL: ClassVar[Model] = Model(
-        ModelFamily("", "video-s3-uploader"), "uploader-service"
+        ModelFamily("ab2c1ad8-87cc-46c4-a981-a7dce5e07070", "video-s3-uploader"), "uploader-service"
     )
     
     aws_region:str
