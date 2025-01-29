@@ -19,6 +19,7 @@ from viam import logging
 import boto3
 
 LOG = logging.getLogger(__name__)
+MB = 1024 * 1024
 
 class UploaderService(Generic, EasyResource):
     MODEL: ClassVar[Model] = Model(
@@ -127,7 +128,7 @@ class UploaderService(Generic, EasyResource):
         for file, path in files:
             try:
                 LOG.info(f"attempting s3 upload for file {path}")
-                self.s3_upload(path, file, os.path.getsize(path))
+                self.s3_upload(path, file, os.path.getsize(path)/MB)
             except Exception as e:
                 if e == OSError:
                     LOG.warning(f"failed to get size of file {path}, skipping")
