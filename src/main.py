@@ -111,11 +111,12 @@ class UploaderService(Generic, EasyResource):
         self.start_upload_job()
         
     def start_upload_job(self):
-        self.scheduler.add_job(self.upload, 'interval', seconds=self.interval)
+        self.scheduler.add_job(self.upload, 'interval', seconds=self.interval*10)
         self.scheduler.start()
     
     
     def upload(self):
+        LOG.info("executing upload on folder")
         files = []
         # walk all dirs including nested ones and get a list of tuples containing (filename, filepath)
         for (root, dirs, file) in os.walk(self.local_path):
@@ -125,6 +126,7 @@ class UploaderService(Generic, EasyResource):
         print(files)
         for file, path in files:
             try:
+                LOG.info(f"attempting s3 upload for file {path}")
                 self.s3_upload(path, file, os.path.getsize(path))
             except Exception as e:
                 if e == OSError:
