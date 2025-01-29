@@ -118,7 +118,7 @@ class UploaderService(Generic, EasyResource):
         LOG.info("executing upload on folder")
         files = []
         # walk all dirs including nested ones and get a list of tuples containing (filename, filepath)
-        self.video_store.do_command()
+        # self.video_store.do_command()
         for (root, dirs, file) in os.walk(self.local_path):
             for f in file:
                 if '.mp4' in f:
