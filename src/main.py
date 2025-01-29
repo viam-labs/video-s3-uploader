@@ -1,5 +1,5 @@
 import asyncio
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from typing import ClassVar, Final, Mapping, Sequence
 import os
 from datetime import datetime, timedelta
@@ -37,7 +37,7 @@ class UploaderService(Generic, EasyResource):
     video_store:Camera = None
 
     interval: int = 0
-    scheduler: BackgroundScheduler = None
+    scheduler: AsyncIOScheduler = None
 
     @classmethod
     def new(
@@ -89,7 +89,7 @@ class UploaderService(Generic, EasyResource):
         if self.scheduler is not None:
             self.scheduler.shutdown()
         else:
-            self.scheduler = BackgroundScheduler()
+            self.scheduler = AsyncIOScheduler()
 
         self.local_path = config.attributes.fields["local_path"].string_value
 
@@ -115,22 +115,22 @@ class UploaderService(Generic, EasyResource):
         self.scheduler.add_job(self.upload, 'interval', seconds=self.interval*10)
         self.scheduler.start()
     
-    def save_video(self):
+    async def save_video(self):
         to_time = datetime.now()
         to_string = to_time.strftime("%Y-%m-%d_%H-%M-%S")
         # this will change to hours for final module
         from_time = to_time - timedelta(seconds=self.interval*10)
         from_string = from_time.strftime("%Y-%m-%d_%H-%M-%S")
         LOG.info("calling save on video store module")
-        self.video_store.do_command({
+        await self.video_store.do_command({
             "command": "save",
             "from": from_string,
             "to": to_string,
             
         })
     
-    def upload(self):
-        self.save_video()
+    async def upload(self):
+        await self.save_video()
         LOG.info("executing upload on folder")
         files = []
         # walk all dirs including nested ones and get a list of tuples containing (filename, filepath)
