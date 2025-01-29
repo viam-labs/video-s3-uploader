@@ -1,0 +1,12 @@
+{
+  "module_name": "video-s3-uploader",
+  "namespace": "",
+  "language": "python",
+  "resource_type": "service",
+  "resource_subtype": "generic",
+  "model_name": "uploader-service",
+  "enable_cloud_build": true,
+  "initialize_git": false,
+  "generator_version": "0.1.0",
+  "generated_on": "2025-01-29T18:12:47.073941Z"
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://dl.viam.dev/module.schema.json",
+  "module_id": "ab2c1ad8-87cc-46c4-a981-a7dce5e07070:video-s3-uploader",
+  "visibility": "private",
+  "url": "https://github.com/viam-labs/video-s3-uploader",
+  "description": "Modular generic service: uploader-service",
+  "models": [
+    {
+      "api": "rdk:service:generic",
+      "model": "ab2c1ad8-87cc-46c4-a981-a7dce5e07070:video-s3-uploader:uploader-service"
+    }
+  ],
+  "entrypoint": "dist/main",
+  "first_run": "",
+  "build": {
+    "build": "./build.sh",
+    "setup": "./setup.sh",
+    "path": "dist/archive.tar.gz",
+    "arch": [
+      "linux/amd64",
+      "linux/arm64"
+    ]
+  }
+}
