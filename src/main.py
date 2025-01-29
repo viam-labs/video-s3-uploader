@@ -101,8 +101,7 @@ class UploaderService(Generic, EasyResource):
             aws_secret_access_key=self.aws_secret_key_value,
             region_name=self.aws_region
         )
-        self.s3_client.buckets()
-        
+                
         video_store_name = config.attributes.fields["video_store"].string_value
         self.video_store = dependencies[video_store_name]
         
