@@ -112,14 +112,14 @@ class UploaderService(Generic, EasyResource):
         self.start_upload_job()
         
     def start_upload_job(self):
-        self.scheduler.add_job(self.upload, 'interval', seconds=self.interval*10)
+        self.scheduler.add_job(self.upload, 'interval', hours=self.interval)
         self.scheduler.start()
     
     async def save_video(self):
         to_time = datetime.now() #- timedelta(seconds=1)
         to_string = to_time.strftime("%Y-%m-%d_%H-%M-%S")
         # this will change to hours for final module
-        from_time = to_time - timedelta(seconds=self.interval*10)
+        from_time = to_time - timedelta(hours=self.interval)
         from_string = from_time.strftime("%Y-%m-%d_%H-%M-%S")
         LOG.info(f"calling save on video store module, from: {from_string} to: {to_string}")
         await self.video_store.do_command({
