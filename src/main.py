@@ -162,6 +162,10 @@ class UploaderService(Generic, EasyResource):
             file_path, object_key, Callback=transfer_callback
         )
         return transfer_callback.thread_info
+    
+    async def close(self):
+        if self.scheduler is not None:
+            self.scheduler.shutdown()
 
 def validate_field_exists(attribute_name: str, config: ComponentConfig):
     if attribute_name not in config.attributes.fields:
