@@ -25,17 +25,17 @@ class UploaderService(Generic, EasyResource):
         ModelFamily("ab2c1ad8-87cc-46c4-a981-a7dce5e07070", "video-s3-uploader"), "uploader-service"
     )
     
-    aws_region:str
-    bucket_name:str
-    aws_secret_key_id:str
-    aws_secret_key_value:str
+    aws_region:str = ""
+    bucket_name:str = ""
+    aws_secret_key_id:str = ""
+    aws_secret_key_value:str = ""
     s3_client = None
 
-    local_path:str
-    video_store:Camera
+    local_path:str = ""
+    video_store:Camera = None
 
-    interval: int
-    scheduler: BackgroundScheduler
+    interval: int = 0
+    scheduler: BackgroundScheduler = None
 
     @classmethod
     def new(
