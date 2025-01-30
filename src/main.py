@@ -130,14 +130,14 @@ class UploaderService(Generic, EasyResource):
     async def upload(self):
         await self.save_video()
         LOG.info("executing upload on folder")
-        time.sleep(10)
+        # sleep for 15 seconds to make sure file is present
+        time.sleep(15)
         files = []
         # walk all dirs including nested ones and get a list of tuples containing (filename, filepath)
         for (root, dirs, file) in os.walk(self.local_path):
             for f in file:
                 if '.mp4' in f:
                     files.append((f, os.path.join(self.local_path, f)))
-        print(files)
         for file, path in files:
             try:
                 LOG.info(f"attempting s3 upload for file {path}")
