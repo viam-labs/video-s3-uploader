@@ -116,7 +116,7 @@ class UploaderService(Generic, EasyResource):
         self.scheduler.start()
     
     async def save_video(self):
-        to_time = datetime.now() #- timedelta(seconds=1)
+        to_time = datetime.now() - timedelta(seconds=5)
         to_string = to_time.strftime("%Y-%m-%d_%H-%M-%S")
         from_time = to_time - timedelta(hours=self.interval)
         from_string = from_time.strftime("%Y-%m-%d_%H-%M-%S")
@@ -125,7 +125,6 @@ class UploaderService(Generic, EasyResource):
             "command": "save",
             "from": from_string,
             "to": to_string,
-            
         })
     
     async def upload(self):
