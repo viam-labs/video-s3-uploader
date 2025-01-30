@@ -140,7 +140,7 @@ class UploaderService(Generic, EasyResource):
         for file, path in files:
             try:
                 LOG.info(f"attempting s3 upload for file {path}")
-                self.s3_upload(path, file, os.path.getsize(path)/MB)
+                self.s3_upload(path, file)
                 os.remove(path)
             except Exception as e:
                 if e == OSError:
@@ -150,16 +150,14 @@ class UploaderService(Generic, EasyResource):
                     LOG.warning(f"error uploading file to S3, error: {e}")
                     continue
     
-    def s3_upload(self, file_path, object_key, file_size_mb):
+    def s3_upload(self, file_path, object_key):
         """
         Upload a file from a local folder to an Amazon S3 bucket, using the default
         configuration.
         """
-        transfer_callback = TransferCallback(file_size_mb)
         self.s3_client.Bucket(self.bucket_name).upload_file(
-            file_path, object_key, Callback=transfer_callback
+            file_path, object_key
         )
-        return transfer_callback.thread_info
     
     async def close(self):
         if self.scheduler is not None:
