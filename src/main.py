@@ -4,8 +4,6 @@ from typing import ClassVar, Final, Mapping, Sequence
 import os
 from datetime import datetime, timedelta
 
-from src.uploader import TransferCallback
-
 from typing_extensions import Self
 from viam.module.module import Module
 from viam.proto.app.robot import ComponentConfig
