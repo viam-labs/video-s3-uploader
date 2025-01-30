@@ -1,26 +1,29 @@
-altgraph==0.17.4
-APScheduler==3.11.0
-boto3==1.36.8
-botocore==1.36.8
-dnspython==2.7.0
-googleapis-common-protos==1.66.0
-grpclib==0.4.7
+attrs @ file:///private/tmp/python-attrs-20231231-5195-5kv3i2/attrs-23.2.0
+certifi==2024.8.30
+cffi==1.17.1
+click @ file:///private/tmp/python-click-20231211-45777-jkrufz/click-8.1.7
+contourpy==1.2.0
+cryptography==43.0.1
+cycler==0.12.1
+fonttools==4.44.0
+googleapis-common-protos==1.60.0
+grpclib==0.4.6
 h2==4.1.0
-hpack==4.1.0
-hyperframe==6.1.0
-jmespath==1.0.1
-macholib==1.16.3
-multidict==6.1.0
-packaging==24.2
-protobuf==5.29.1
-pyinstaller==6.11.1
-pyinstaller-hooks-contrib==2025.0
-pymongo==4.11
-python-dateutil==2.9.0.post0
-s3transfer==0.11.2
-setuptools==75.8.0
-six==1.17.0
-typing_extensions==4.12.2
-tzlocal==5.2
-urllib3==2.3.0
-viam-sdk==0.38.0
+hpack==4.0.0
+hyperframe==6.0.1
+idna @ file:///private/tmp/python-idna-20231125-5279-xtqzsf/idna-3.6
+kiwisolver==1.4.5
+matplotlib==3.8.1
+multidict==6.0.4
+numpy==1.26.1
+pathspec @ file:///private/tmp/python-pathspec-20231212-4946-k7fih8/pathspec-0.12.1
+Pillow==10.0.1
+platformdirs @ file:///private/tmp/python-platformdirs-20231204-5228-f28h82/platformdirs-4.1.0
+protobuf==3.20.3
+pycparser==2.22
+pyparsing==3.1.1
+python-dateutil==2.8.2
+python-dotenv==1.0.0
+six==1.16.0
+typing_extensions==4.8.0
+viam-sdk==0.9.1

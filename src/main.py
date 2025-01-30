@@ -3,6 +3,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from typing import ClassVar, Final, Mapping, Sequence
 import os
 from datetime import datetime, timedelta
+import time
 
 from typing_extensions import Self
 from viam.module.module import Module
@@ -110,24 +111,26 @@ class UploaderService(Generic, EasyResource):
         self.start_upload_job()
         
     def start_upload_job(self):
-        self.scheduler.add_job(self.upload, 'interval', hours=self.interval)
+        self.scheduler.add_job(self.upload, 'interval', minutes=self.interval)
         self.scheduler.start()
     
     async def save_video(self):
-        to_time = datetime.now() - timedelta(seconds=5)
+        to_time = datetime.now()
         to_string = to_time.strftime("%Y-%m-%d_%H-%M-%S")
-        from_time = to_time - timedelta(hours=self.interval)
+        from_time = to_time - timedelta(minutes=self.interval)
         from_string = from_time.strftime("%Y-%m-%d_%H-%M-%S")
         LOG.info(f"calling save on video store module, from: {from_string} to: {to_string}")
         await self.video_store.do_command({
             "command": "save",
             "from": from_string,
             "to": to_string,
+            "async": True
         })
     
     async def upload(self):
         await self.save_video()
         LOG.info("executing upload on folder")
+        time.sleep(10)
         files = []
         # walk all dirs including nested ones and get a list of tuples containing (filename, filepath)
         for (root, dirs, file) in os.walk(self.local_path):
@@ -153,9 +156,7 @@ class UploaderService(Generic, EasyResource):
         Upload a file from a local folder to an Amazon S3 bucket, using the default
         configuration.
         """
-        self.s3_client.Bucket(self.bucket_name).upload_file(
-            file_path, object_key
-        )
+        self.s3_client.Bucket(self.bucket_name).upload_file(file_path, object_key)
     
     async def close(self):
         if self.scheduler is not None:
