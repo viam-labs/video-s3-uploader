@@ -26,14 +26,19 @@ class UploaderService(Generic, EasyResource):
         ModelFamily("ab2c1ad8-87cc-46c4-a981-a7dce5e07070", "video-s3-uploader"), "uploader-service"
     )
     
-    aws_region:str = ""
-    bucket_name:str = ""
-    aws_secret_key_id:str = ""
-    aws_secret_key_value:str = ""
+    aws_region: str = ""
+    bucket_name: str = ""
+    aws_secret_key_id: str = ""
+    aws_secret_key_value: str = ""
     s3_client = None
 
-    local_path:str = ""
-    video_store:Camera = None
+    local_path: str = ""
+    video_store: Camera = None
+
+    # Example new fields for building a path
+    customer: str = ""
+    location: str = ""
+    vdr_id: str = ""
 
     interval: int = 0
     scheduler: AsyncIOScheduler = None
@@ -42,29 +47,12 @@ class UploaderService(Generic, EasyResource):
     def new(
         cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]
     ) -> Self:
-        """This method creates a new instance of this Generic service.
-        The default implementation sets the name from the `config` parameter and then calls `reconfigure`.
-
-        Args:
-            config (ComponentConfig): The configuration for this resource
-            dependencies (Mapping[ResourceName, ResourceBase]): The dependencies (both implicit and explicit)
-
-        Returns:
-            Self: The resource
-        """
+        """Create a new instance of this Generic service."""
         return super().new(config, dependencies)
 
     @classmethod
     def validate_config(cls, config: ComponentConfig) -> Sequence[str]:
-        """This method allows you to validate the configuration object received from the machine,
-        as well as to return any implicit dependencies based on that `config`.
-
-        Args:
-            config (ComponentConfig): The configuration for this resource
-
-        Returns:
-            Sequence[str]: A list of implicit dependencies
-        """
+        """Validate the configuration object and return any implicit dependencies."""
         validate_field_exists("aws_region", config)
         validate_field_exists("bucket_name", config)
         validate_field_exists("local_path", config)
@@ -72,18 +60,20 @@ class UploaderService(Generic, EasyResource):
         validate_field_exists("aws_key_value", config)
         validate_field_exists("video_store", config)
         validate_field_exists("interval", config)
-        # return the video store component name as an implicit dependency
+
+        # We introduce a few new optional fields for our subfolders
+        # If these are truly optional, check before using them in reconfigure
+        # or assign defaults if they don't exist:
+        # validate_field_exists("customer", config)
+        # validate_field_exists("location", config)
+        # validate_field_exists("vdr_id", config)
+
         return [config.attributes.fields["video_store"].string_value]
 
     def reconfigure(
         self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]
     ):
-        """This method allows you to dynamically update your service when it receives a new `config` object.
-
-        Args:
-            config (ComponentConfig): The new configuration
-            dependencies (Mapping[ResourceName, ResourceBase]): Any dependencies (both implicit and explicit)
-        """
+        """Update the service when it receives a new `config` object."""
         
         if self.scheduler is not None:
             self.scheduler.shutdown()
@@ -91,11 +81,23 @@ class UploaderService(Generic, EasyResource):
             self.scheduler = AsyncIOScheduler()
 
         self.local_path = config.attributes.fields["local_path"].string_value
-
         self.aws_region = config.attributes.fields["aws_region"].string_value
         self.bucket_name = config.attributes.fields["bucket_name"].string_value        
         self.aws_secret_key_id = config.attributes.fields["aws_key_id"].string_value
         self.aws_secret_key_value = config.attributes.fields["aws_key_value"].string_value
+
+        # Get optional folder fields if they exist
+        # For example, if you don't always have them in config:
+        self.customer = config.attributes.fields.get("customer", None)
+        if self.customer:
+            self.customer = self.customer.string_value
+        self.location = config.attributes.fields.get("location", None)
+        if self.location:
+            self.location = self.location.string_value
+        self.vdr_id = config.attributes.fields.get("vdr_id", None)
+        if self.vdr_id:
+            self.vdr_id = self.vdr_id.string_value
+
         self.s3_client = boto3.resource(
             's3',
             aws_access_key_id=self.aws_secret_key_id,
@@ -130,42 +132,64 @@ class UploaderService(Generic, EasyResource):
     async def upload(self):
         await self.save_video()
         LOG.info("executing upload on folder")
-        # sleep for 15 seconds to make sure file is present
+        # Sleep briefly to allow file creation to finish
         time.sleep(15)
         files = []
-        # walk all dirs including nested ones and get a list of tuples containing (filename, filepath)
+        # Walk all dirs including nested ones and collect mp4 files
         for (root, dirs, file) in os.walk(self.local_path):
             for f in file:
-                if '.mp4' in f:
-                    files.append((f, os.path.join(self.local_path, f)))
+                if f.endswith('.mp4'):
+                    files.append((f, os.path.join(root, f)))
+
         for file, path in files:
             try:
                 LOG.info(f"attempting s3 upload for file {path}")
                 self.s3_upload(path, file)
                 os.remove(path)
             except Exception as e:
-                if e == OSError:
+                # If we specifically care about OSError:
+                if isinstance(e, OSError):
                     LOG.warning(f"failed to get size of file {path}, skipping, error: {e}")
                     continue
                 else:
                     LOG.warning(f"error uploading file to S3, error: {e}")
                     continue
     
-    def s3_upload(self, file_path, object_key):
+    def s3_upload(self, file_path, file_name):
         """
-        Upload a file from a local folder to an Amazon S3 bucket, using the default
-        configuration.
+        Upload a file from a local folder to an Amazon S3 bucket, placing it
+        in a subfolder path that depends on 'customer', 'location', and 'vdr_id'.
         """
+        # You can skip or conditionally build this path based on your config
+        # Example:
+        parts = []
+        if self.customer:
+            parts.append(self.customer)
+        if self.location:
+            parts.append(self.location)
+        if self.vdr_id:
+            parts.append(self.vdr_id)
+        # Join them all (like "customer/location/vdr_id/filename.mp4"):
+        # If you only want one prefix from config, just do: prefix = self.some_prefix
+        s3_path = "/".join(parts)  # e.g. "customer/location/vdr_id"
+        
+        # Now, the final key is:  s3_path/filename.mp4
+        if s3_path:
+            object_key = f"{s3_path}/{file_name}"
+        else:
+            object_key = file_name  # no subfolders
+        
         self.s3_client.Bucket(self.bucket_name).upload_file(file_path, object_key)
     
     async def close(self):
         if self.scheduler is not None:
             self.scheduler.shutdown()
 
+
 def validate_field_exists(attribute_name: str, config: ComponentConfig):
     if attribute_name not in config.attributes.fields:
         raise Exception(f"{attribute_name} must be specified in config.")
 
+
 if __name__ == "__main__":
     asyncio.run(Module.run_from_registry())
-
