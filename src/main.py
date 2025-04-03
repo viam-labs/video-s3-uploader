@@ -38,7 +38,7 @@ class UploaderService(Generic, EasyResource):
     # Example new fields for building a path
     customer: str = ""
     location: str = ""
-    vdr_id: str = ""
+    file_id: str = ""
 
     interval: int = 0
     scheduler: AsyncIOScheduler = None
@@ -66,7 +66,7 @@ class UploaderService(Generic, EasyResource):
         # or assign defaults if they don't exist:
         # validate_field_exists("customer", config)
         # validate_field_exists("location", config)
-        # validate_field_exists("vdr_id", config)
+        # validate_field_exists("file_id", config)
 
         return [config.attributes.fields["video_store"].string_value]
 
@@ -94,9 +94,9 @@ class UploaderService(Generic, EasyResource):
         self.location = config.attributes.fields.get("location", None)
         if self.location:
             self.location = self.location.string_value
-        self.vdr_id = config.attributes.fields.get("vdr_id", None)
-        if self.vdr_id:
-            self.vdr_id = self.vdr_id.string_value
+        self.file_id = config.attributes.fields.get("file_id", None)
+        if self.file_id:
+            self.file_id = self.file_id.string_value
 
         self.s3_client = boto3.resource(
             's3',
@@ -158,7 +158,7 @@ class UploaderService(Generic, EasyResource):
     def s3_upload(self, file_path, file_name):
         """
         Upload a file from a local folder to an Amazon S3 bucket, placing it
-        in a subfolder path that depends on 'customer', 'location', and 'vdr_id'.
+        in a subfolder path that depends on 'customer', 'location', and 'file_id'.
         """
         # You can skip or conditionally build this path based on your config
         # Example:
@@ -167,11 +167,11 @@ class UploaderService(Generic, EasyResource):
             parts.append(self.customer)
         if self.location:
             parts.append(self.location)
-        if self.vdr_id:
-            parts.append(self.vdr_id)
-        # Join them all (like "customer/location/vdr_id/filename.mp4"):
+        if self.file_id:
+            parts.append(self.file_id)
+        # Join them all (like "customer/location/file_id/filename.mp4"):
         # If you only want one prefix from config, just do: prefix = self.some_prefix
-        s3_path = "/".join(parts)  # e.g. "customer/location/vdr_id"
+        s3_path = "/".join(parts)  # e.g. "customer/location/file_id"
         
         # Now, the final key is:  s3_path/filename.mp4
         if s3_path:
