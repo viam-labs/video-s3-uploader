@@ -1,22 +1,21 @@
 import asyncio
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from typing import ClassVar, Final, Mapping, Sequence
 import os
-from datetime import datetime, timedelta
 import time
+from datetime import datetime, timedelta
+from typing import ClassVar, Mapping, Sequence
 
+import boto3
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from typing_extensions import Self
+from viam import logging
+from viam.components.camera import Camera
 from viam.module.module import Module
 from viam.proto.app.robot import ComponentConfig
 from viam.proto.common import ResourceName
 from viam.resource.base import ResourceBase
-from viam.components.camera import Camera
 from viam.resource.easy_resource import EasyResource
 from viam.resource.types import Model, ModelFamily
 from viam.services.generic import *
-from viam import logging
-
-import boto3
 
 LOG = logging.getLogger(__name__)
 MB = 1024 * 1024
