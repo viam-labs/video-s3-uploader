@@ -15,7 +15,7 @@ from viam.proto.common import ResourceName
 from viam.resource.base import ResourceBase
 from viam.resource.easy_resource import EasyResource
 from viam.resource.types import Model, ModelFamily
-from viam.services.generic import *
+from viam.services.generic import Generic
 
 LOG = logging.getLogger(__name__)
 MB = 1024 * 1024
@@ -146,7 +146,7 @@ class UploaderService(Generic, EasyResource):
                 self.s3_upload(path, file)
                 os.remove(path)
             except Exception as e:
-                if e == OSError:
+                if isinstance(e, OSError):
                     LOG.warning(
                         f"failed to get size of file {path}, skipping, error: {e}"
                     )
