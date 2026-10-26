@@ -40,9 +40,7 @@ class UploaderService(Generic, EasyResource):
     scheduler: AsyncIOScheduler = None
 
     @classmethod
-    def new(
-        cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]
-    ) -> Self:
+    def new(cls, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]) -> Self:
         """This method creates a new instance of this Generic service.
         The default implementation sets the name from the `config` parameter and then calls `reconfigure`.
 
@@ -76,9 +74,7 @@ class UploaderService(Generic, EasyResource):
         # return the video store component name as an implicit dependency
         return [config.attributes.fields["video_store"].string_value]
 
-    def reconfigure(
-        self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]
-    ):
+    def reconfigure(self, config: ComponentConfig, dependencies: Mapping[ResourceName, ResourceBase]):
         """This method allows you to dynamically update your service when it receives a new `config` object.
 
         Args:
@@ -96,9 +92,7 @@ class UploaderService(Generic, EasyResource):
         self.aws_region = config.attributes.fields["aws_region"].string_value
         self.bucket_name = config.attributes.fields["bucket_name"].string_value
         self.aws_secret_key_id = config.attributes.fields["aws_key_id"].string_value
-        self.aws_secret_key_value = config.attributes.fields[
-            "aws_key_value"
-        ].string_value
+        self.aws_secret_key_value = config.attributes.fields["aws_key_value"].string_value
         self.s3_client = boto3.resource(
             "s3",
             aws_access_key_id=self.aws_secret_key_id,
@@ -122,12 +116,8 @@ class UploaderService(Generic, EasyResource):
         to_string = to_time.strftime("%Y-%m-%d_%H-%M-%S")
         from_time = to_time - timedelta(minutes=self.interval)
         from_string = from_time.strftime("%Y-%m-%d_%H-%M-%S")
-        LOG.info(
-            f"calling save on video store module, from: {from_string} to: {to_string}"
-        )
-        await self.video_store.do_command(
-            {"command": "save", "from": from_string, "to": to_string, "async": True}
-        )
+        LOG.info(f"calling save on video store module, from: {from_string} to: {to_string}")
+        await self.video_store.do_command({"command": "save", "from": from_string, "to": to_string, "async": True})
 
     async def upload(self):
         await self.save_video()
@@ -147,9 +137,7 @@ class UploaderService(Generic, EasyResource):
                 os.remove(path)
             except Exception as e:
                 if isinstance(e, OSError):
-                    LOG.warning(
-                        f"failed to get size of file {path}, skipping, error: {e}"
-                    )
+                    LOG.warning(f"failed to get size of file {path}, skipping, error: {e}")
                     continue
                 else:
                     LOG.warning(f"error uploading file to S3, error: {e}")
